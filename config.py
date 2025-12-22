@@ -23,5 +23,5 @@ if ROOT_PATH:
     BASE_URL_API = BASE_URL_API.rstrip("/") + ROOT_PATH
     BASE_URL_IMG = BASE_URL_IMG.rstrip("/") + ROOT_PATH
 
-ASSETS_DIR = Path(__file__).parent / "dog-assets"
+ASSETS_DIR = Path(__file__).parent.parent / "dog-assets"
 
