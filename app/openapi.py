@@ -1,10 +1,5 @@
-from typing import Dict, Any, Union, List
-from pydantic import BaseModel
+from typing import Dict, Any
 from fastapi import FastAPI
-
-class APIResponse(BaseModel):
-    status: str
-    message: Union[Dict, List[str], str]
 
 def get_openapi_schema() -> Dict[str, Any]:
     return {
@@ -34,19 +29,6 @@ def get_openapi_schema() -> Dict[str, Any]:
             }
         ]
     }
-
-def get_fastapi_config(root_path: str = "") -> Dict[str, Any]:
-    config = {
-        "title": "Dog CEO API",
-        "description": "API for accessing dog breed images and information",
-        "version": "1.0.0",
-        "docs_url": "/docs",
-        "redoc_url": "/redoc",
-        "openapi_url": "/openapi.json"
-    }
-    if root_path:
-        config["root_path"] = root_path
-    return config
 
 def setup_custom_openapi(app: FastAPI):
     def custom_openapi():

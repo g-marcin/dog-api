@@ -12,3 +12,6 @@ __pycache__/
 .env.local
 .env.development.local
 .env.test.local
+
+__pycache__/
+.pytest_cache/
