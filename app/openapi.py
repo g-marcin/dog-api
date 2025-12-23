@@ -5,7 +5,7 @@ def get_openapi_schema() -> Dict[str, Any]:
     return {
         "openapi": "3.0.2",
         "info": {
-            "title": "Dog CEO API",
+            "title": "dog-api",
             "description": "API for accessing dog breed images and information",
             "version": "1.0.0",
             "contact": {
