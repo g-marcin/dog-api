@@ -1,70 +1,43 @@
 import re
-from typing import List, Union, Callable
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-from starlette.responses import Response
+from typing import List, Tuple
 import config
 
-allowed_origins_patterns: List[Union[str, re.Pattern]] = []
+def parse_cors_origins() -> Tuple[List[str], List[re.Pattern]]:
+    plain_origins = []
+    regex_patterns = []
+    
+    for origin in config.CORS_ORIGINS.split(","):
+        origin = origin.strip()
+        if not origin:
+            continue
+        if origin.startswith("/") and origin.endswith("/") and len(origin) > 2:
+            regex_pattern = origin[1:-1]
+            try:
+                compiled_pattern = re.compile(regex_pattern)
+                regex_patterns.append(compiled_pattern)
+                print(f"CORS: Added regex pattern: {regex_pattern}")
+            except re.error as e:
+                print(f"Warning: Invalid regex pattern '{regex_pattern}': {e}")
+        elif "*" in origin:
+            escaped = re.escape(origin)
+            pattern = escaped.replace(r"\*", ".*")
+            compiled_pattern = re.compile(f"^{pattern}$")
+            regex_patterns.append(compiled_pattern)
+            print(f"CORS: Added wildcard pattern '{origin}' -> regex: ^{pattern}$")
+        else:
+            plain_origins.append(origin)
+            print(f"CORS: Added plain origin: {origin}")
+    
+    return plain_origins, regex_patterns
 
-for origin in config.CORS_ORIGINS.split(","):
-    origin = origin.strip()
-    if not origin:
-        continue
-    if origin.startswith("/") and origin.endswith("/") and len(origin) > 2:
-        regex_pattern = origin[1:-1]
-        try:
-            compiled_pattern = re.compile(regex_pattern)
-            allowed_origins_patterns.append(compiled_pattern)
-            print(f"CORS: Added regex pattern: {regex_pattern}")
-        except re.error as e:
-            print(f"Warning: Invalid regex pattern '{regex_pattern}': {e}")
-    elif "*" in origin:
-        escaped = re.escape(origin)
-        pattern = escaped.replace(r"\*", ".*")
-        compiled_pattern = re.compile(f"^{pattern}$")
-        allowed_origins_patterns.append(compiled_pattern)
-        print(f"CORS: Added wildcard pattern '{origin}' -> regex: ^{pattern}$")
-    else:
-        allowed_origins_patterns.append(origin)
-        print(f"CORS: Added plain origin: {origin}")
+plain_origins, regex_patterns = parse_cors_origins()
 
 def is_origin_allowed(origin: str) -> bool:
     if not origin:
         return False
-    for pattern in allowed_origins_patterns:
-        if isinstance(pattern, re.Pattern):
-            if pattern.match(origin):
-                print(f"CORS: Origin '{origin}' matched pattern '{pattern.pattern}'")
-                return True
-        elif pattern == origin:
-            print(f"CORS: Origin '{origin}' matched exact string '{pattern}'")
+    if origin in plain_origins:
+        return True
+    for pattern in regex_patterns:
+        if pattern.match(origin):
             return True
-    print(f"CORS: Origin '{origin}' not allowed")
     return False
-
-class CustomCORSMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: Callable):
-        origin = request.headers.get("origin")
-        
-        if request.method == "OPTIONS":
-            if origin and is_origin_allowed(origin):
-                response = Response(status_code=204)
-                response.headers["Access-Control-Allow-Origin"] = origin
-                response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-                response.headers["Access-Control-Allow-Headers"] = "*"
-                response.headers["Access-Control-Allow-Credentials"] = "true"
-                response.headers["Access-Control-Max-Age"] = "3600"
-                return response
-            return await call_next(request)
-        
-        response = await call_next(request)
-        
-        if origin and is_origin_allowed(origin):
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-        
-        return response
-
