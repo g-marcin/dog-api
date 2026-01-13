@@ -1,7 +1,7 @@
 .PHONY: dev start install test lint format clean
 
 dev:
-	python main.py
+	nodemon --exec "python main.py" --ext ".py"
 
 start:
 	uvicorn app.main:app --host localhost --port 8000 --reload --root-path /dog-api
