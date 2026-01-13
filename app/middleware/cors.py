@@ -49,15 +49,14 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
         
         if request.method == "OPTIONS":
             if origin and is_origin_allowed(origin):
-                response = Response()
+                response = Response(status_code=204)
                 response.headers["Access-Control-Allow-Origin"] = origin
                 response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
                 response.headers["Access-Control-Allow-Headers"] = "*"
                 response.headers["Access-Control-Allow-Credentials"] = "true"
                 response.headers["Access-Control-Max-Age"] = "3600"
                 return response
-            else:
-                return Response(status_code=403)
+            return await call_next(request)
         
         response = await call_next(request)
         
