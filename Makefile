@@ -22,3 +22,12 @@ clean:
 	find . -type d -name __pycache__ -exec rm -r {} + || true
 	find . -type f -name "*.pyc" -delete || true
 
+db-migrate:
+	alembic revision --autogenerate -m "$(MSG)"
+
+db-migrate-update:
+	alembic upgrade head
+
+db-migrate-downgrade:
+	alembic downgrade -1
+
