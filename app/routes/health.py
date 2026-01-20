@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.models import APIResponse, success_response
+from app.model.models import APIResponse, success_response
 from app.services.health_service import check_system_performance, check_health
 
 import os

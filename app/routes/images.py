@@ -1,7 +1,7 @@
 import random
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from app.models import APIResponse, success_response
+from app.model.models import APIResponse, success_response
 from app.services.breed_service import get_breed_images, get_image_url, get_all_images
 import config
 

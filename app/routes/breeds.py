@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.models import APIResponse, success_response
+from app.model.models import APIResponse, success_response
 from app.services.breed_service import scan_breeds
 
 router = APIRouter()
