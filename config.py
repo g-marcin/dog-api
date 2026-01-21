@@ -15,7 +15,7 @@ os.environ.setdefault("CORS_ORIGINS", "http://localhost:5173,http://localhost:30
 
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 BASE_URL_API = os.getenv("BASE_URL_API", "http://localhost:8000")
-BASE_URL_IMG = os.getenv("BASE_URL_IMG", "https://mgrzmil.dev")
+BASE_URL_IMG = os.getenv("BASE_URL_IMG", "https://mgrzmil.dev")>
 PORT = int(os.getenv("PORT", 8000))
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,http://localhost:5174,https://mgrzmil.dev,https://woof-app-ff670*.web.app")
 
