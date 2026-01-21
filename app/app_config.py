@@ -9,7 +9,6 @@ def get_fastapi_config(root_path: str = "") -> Dict[str, Any]:
         "redoc_url": "/redoc",
         "openapi_url": "/openapi.json"
     }
-    if root_path:
-        config["root_path"] = root_path
+    config["root_path"] = root_path or ""
     return config
 
