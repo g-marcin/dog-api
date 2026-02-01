@@ -1,26 +1,21 @@
 from pathlib import Path
 from typing import Dict, List
 import config
+from app.model.database import SessionLocal, Breed
 
-def scan_breeds() -> Dict[str, List[str]]:
-    breeds = {}
-    if not config.ASSETS_DIR.exists():
-        return breeds
-    
-    for breed_dir in config.ASSETS_DIR.iterdir():
-        if not breed_dir.is_dir():
-            continue
-        
-        breed_name = breed_dir.name
-        sub_breeds = []
-        
-        for item in breed_dir.iterdir():
-            if item.is_dir():
-                sub_breeds.append(item.name)
-        
-        breeds[breed_name] = sub_breeds if sub_breeds else []
-    
-    return breeds
+
+def get_breeds() -> Dict[str, List[str]]:
+    """Get all breeds and their variants from the database."""
+    db = SessionLocal()
+    try:
+        breeds = db.query(Breed).all()
+        return {
+            breed.breed: [variant.variant for variant in breed.variants]
+            for breed in breeds
+        }
+    finally:
+        db.close()
+
 
 def get_breed_images(breed: str, sub_breed: str = None) -> List[Path]:
     breed_path = config.ASSETS_DIR / breed

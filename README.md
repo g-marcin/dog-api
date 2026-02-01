@@ -25,7 +25,6 @@ dog-api/
 ├── config.py                    # Environment configuration
 ├── main.py                      # Entry point (runs uvicorn)
 ├── server.py                    # Legacy file (deprecated)
-├── requirements.txt             # Python dependencies
 ├── env.example                  # Environment variables template
 ├── nginx.conf                   # Nginx configuration
 └── reload-nginx.sh              # Nginx reload script

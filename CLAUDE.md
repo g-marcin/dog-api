@@ -1,5 +1,11 @@
 # Claude Code Rules for dog-api
 
+## Shell Commands
+
+Check the operating system before running shell commands:
+- On Windows (`platform: win32`): Use PowerShell commands (Remove-Item, Get-ChildItem, Copy-Item, Move-Item)
+- On Linux/macOS: Use bash commands (rm, ls, cp, mv)
+
 ## Database Migrations
 
 When making database schema changes:
