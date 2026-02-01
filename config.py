@@ -25,3 +25,10 @@ if ROOT_PATH:
 
 ASSETS_DIR = Path(__file__).parent.parent / "dog-assets"
 
+DB_POSTGRES_URL = os.getenv("DB_POSTGRES_URL", "postgresql://postgres:postgres@localhost:5432/dog_app")
+DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "5"))
+DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "10"))
+DB_POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", "300"))
+DB_POOL_PRE_PING = os.getenv("DB_POOL_PRE_PING", "true").lower() == "true"
+DB_PGBOUNCER_MODE = os.getenv("DB_PGBOUNCER_MODE", "transaction")
+

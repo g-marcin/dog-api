@@ -1,15 +1,48 @@
-import os
-from dotenv import load_dotenv
-
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
+from sqlalchemy.pool import QueuePool, NullPool
 from sqlalchemy.sql import func
 
-load_dotenv()
+from config import (
+    DB_POSTGRES_URL,
+    DB_POOL_SIZE,
+    DB_MAX_OVERFLOW,
+    DB_POOL_RECYCLE,
+    DB_POOL_PRE_PING,
+    DB_PGBOUNCER_MODE,
+)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL, echo=False)
+def create_db_engine():
+    """
+    Create SQLAlchemy engine with connection pooling configured for PgBouncer.
+
+    - transaction mode: Use NullPool (PgBouncer handles pooling)
+    - session mode: Use QueuePool with configured pool settings
+    """
+    if DB_PGBOUNCER_MODE == "transaction":
+        # PgBouncer in transaction mode handles connection pooling
+        # Use NullPool to avoid double-pooling
+        return create_engine(
+            DB_POSTGRES_URL,
+            poolclass=NullPool,
+            echo=False,
+        )
+    else:
+        # PgBouncer in session mode or direct PostgreSQL connection
+        # Use QueuePool with connection pooling settings
+        return create_engine(
+            DB_POSTGRES_URL,
+            poolclass=QueuePool,
+            pool_size=DB_POOL_SIZE,
+            max_overflow=DB_MAX_OVERFLOW,
+            pool_recycle=DB_POOL_RECYCLE,
+            pool_pre_ping=DB_POOL_PRE_PING,
+            echo=False,
+        )
+
+
+engine = create_db_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

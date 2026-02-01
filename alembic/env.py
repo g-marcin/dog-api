@@ -13,7 +13,7 @@ from app.model.database import Base
 
 config = context.config
 
-if database_url := os.getenv("DATABASE_URL"):
+if database_url := os.getenv("DB_POSTGRES_URL"):
     config.set_main_option("sqlalchemy.url", database_url)
 
 if config.config_file_name is not None:

@@ -5,7 +5,7 @@ Reads breed data from JSON and populates breed_variants with proper breed_id ref
 Usage:
     python -m seed.seed_breed_variants
 
-Requires DATABASE_URL environment variable or .env file.
+Requires DB_POSTGRES_URL environment variable or .env file.
 """
 import json
 import os
@@ -24,9 +24,9 @@ BREEDS_JSON_PATH = Path(__file__).parent.parent.parent / "tmp" / "breeds.json"
 
 
 def get_database_url() -> str:
-    url = os.getenv("DATABASE_URL")
+    url = os.getenv("DB_POSTGRES_URL")
     if not url:
-        raise RuntimeError("DATABASE_URL environment variable not set")
+        raise RuntimeError("DB_POSTGRES_URL environment variable not set")
     return url
 
 
