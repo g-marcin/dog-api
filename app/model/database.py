@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
 
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 
 load_dotenv()
 
@@ -17,6 +17,14 @@ class Breed(Base):
 
     id = Column(Integer, primary_key=True)
     breed = Column(String(64), nullable=False, unique=True, index=True)
+    variants = relationship("BreedVariant", back_populates="breed")
 
+class BreedVariant(Base):
+    __tablename__ = "breed_variants"
+
+    id = Column(Integer, primary_key=True)
+    breed_id = Column(Integer, ForeignKey("breeds.id"), nullable=False, index=True)
+    variant = Column(String(64), nullable=False, index=True)
+    breed = relationship("Breed", back_populates="variants")
 
 

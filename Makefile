@@ -43,6 +43,13 @@ db-migrate-update:
 db-migrate-downgrade:
 	alembic downgrade -1
 
+db-stamp:
+	alembic stamp $(REV)
+
+db-history:
+	alembic current
+	alembic history
+
 pm2-start:
 	pm2 start ecosystem.config.js
 
