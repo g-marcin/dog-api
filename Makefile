@@ -1,4 +1,4 @@
-.PHONY: dev start install test lint format clean pm2-start pm2-stop pm2-restart venv venv-windows venv-linux
+.PHONY: dev start install test lint format clean pm2-start pm2-stop pm2-restart venv venv-windows venv-linux db-migrate db-migrate-update db-migrate-downgrade db-stamp db-history
 
 venv-windows:
 	powershell -NoExit -Command ".\.venv\Scripts\Activate.ps1"
@@ -13,49 +13,38 @@ venv: venv-linux
 endif
 
 dev:
-	nodemon --exec "python main.py" --ext ".py"
+	nodemon --exec "uv run python main.py" --ext ".py"
 
 start:
-	python -m uvicorn app.main:app --host localhost --port 8000 --reload
+	uv run uvicorn app.main:app --host localhost --port 8000 --reload
 
 install:
-	pip install -r requirements.txt
+	uv sync
 
 test:
-	pytest
+	uv run python -m pytest
 
 lint:
-	flake8 app/ || true
+	uv run flake8 app/
 
 format:
-	black app/ || true
+	uv run black app/
 
 clean:
-	find . -type d -name __pycache__ -exec rm -r {} + || true
-	find . -type f -name "*.pyc" -delete || true
+	uv run python -c "import shutil, pathlib; [shutil.rmtree(p) for p in pathlib.Path('.').rglob('__pycache__')]; [p.unlink() for p in pathlib.Path('.').rglob('*.pyc')]"
 
 db-migrate:
-	alembic revision --autogenerate -m "$(MSG)"
+	uv run alembic revision --autogenerate -m "$(MSG)"
 
 db-migrate-update:
-	alembic upgrade head
+	uv run alembic upgrade head
 
 db-migrate-downgrade:
-	alembic downgrade -1
+	uv run alembic downgrade -1
 
 db-stamp:
-	alembic stamp $(REV)
+	uv run alembic stamp $(REV)
 
 db-history:
-	alembic current
-	alembic history
-
-pm2-start:
-	pm2 start ecosystem.config.js
-
-pm2-stop:
-	pm2 stop dog-api
-
-pm2-restart:
-	pm2 restart dog-api
-
+	uv run alembic current
+	uv run alembic history
