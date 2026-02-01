@@ -1,4 +1,16 @@
-.PHONY: dev start install test lint format clean
+.PHONY: dev start install test lint format clean pm2-start pm2-stop pm2-restart venv venv-windows venv-linux
+
+venv-windows:
+	powershell -NoExit -Command ".\.venv\Scripts\Activate.ps1"
+
+venv-linux:
+	bash -c "source ./.venv/bin/activate && exec bash"
+
+ifeq ($(OS),Windows_NT)
+venv: venv-windows
+else
+venv: venv-linux
+endif
 
 dev:
 	nodemon --exec "python main.py" --ext ".py"
@@ -30,4 +42,13 @@ db-migrate-update:
 
 db-migrate-downgrade:
 	alembic downgrade -1
+
+pm2-start:
+	pm2 start ecosystem.config.js
+
+pm2-stop:
+	pm2 stop dog-api
+
+pm2-restart:
+	pm2 restart dog-api
 
