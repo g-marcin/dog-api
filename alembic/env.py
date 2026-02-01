@@ -40,7 +40,7 @@ def seed_data(connection) -> None:
         print(f"Seed file not found: {breeds_path}")
         return
 
-    with open(breeds_path) as f:
+    with open(breeds_path, encoding='utf-8') as f:
         breeds_data = json.load(f)["message"]
 
     for breed_name in breeds_data.keys():
@@ -59,6 +59,96 @@ def seed_data(connection) -> None:
             )
 
     print(f"Seeded {len(breeds_data)} breeds")
+
+
+def seed_breed_descriptions(connection) -> None:
+    """Seed breed descriptions after breeds are created."""
+    result = connection.execute(text(
+        "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'breed_descriptions')"
+    ))
+    if not result.scalar():
+        return
+
+    if connection.execute(text("SELECT COUNT(*) FROM breed_descriptions")).scalar() > 0:
+        return
+
+    descriptions_path = SEED_DIR / "breed_descriptions.json"
+    if not descriptions_path.exists():
+        print(f"Seed file not found: {descriptions_path}")
+        return
+
+    breed_map = {
+        row[1]: row[0]
+        for row in connection.execute(text("SELECT id, breed FROM breeds"))
+    }
+
+    with open(descriptions_path, encoding='utf-8') as f:
+        descriptions_data = json.load(f)
+
+    count = 0
+    for breed_name, desc in descriptions_data.items():
+        if breed_name not in breed_map:
+            print(f"Breed not found: {breed_name}")
+            continue
+        connection.execute(
+            text("""
+                INSERT INTO breed_descriptions (breed_id, description_en, description_pl)
+                VALUES (:breed_id, :description_en, :description_pl)
+            """),
+            {
+                "breed_id": breed_map[breed_name],
+                "description_en": desc["description_en"],
+                "description_pl": desc["description_pl"]
+            }
+        )
+        count += 1
+
+    print(f"Seeded {count} breed descriptions")
+
+
+def seed_variant_descriptions(connection) -> None:
+    """Seed variant descriptions after variants are created."""
+    result = connection.execute(text(
+        "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'variant_descriptions')"
+    ))
+    if not result.scalar():
+        return
+
+    if connection.execute(text("SELECT COUNT(*) FROM variant_descriptions")).scalar() > 0:
+        return
+
+    descriptions_path = SEED_DIR / "variant_descriptions.json"
+    if not descriptions_path.exists():
+        print(f"Seed file not found: {descriptions_path}")
+        return
+
+    variant_map = {
+        row[1]: row[0]
+        for row in connection.execute(text("SELECT id, variant FROM breed_variants"))
+    }
+
+    with open(descriptions_path, encoding='utf-8') as f:
+        descriptions_data = json.load(f)
+
+    count = 0
+    for variant_name, desc in descriptions_data.items():
+        if variant_name not in variant_map:
+            print(f"Variant not found: {variant_name}")
+            continue
+        connection.execute(
+            text("""
+                INSERT INTO variant_descriptions (variant_id, description_en, description_pl)
+                VALUES (:variant_id, :description_en, :description_pl)
+            """),
+            {
+                "variant_id": variant_map[variant_name],
+                "description_en": desc["description_en"],
+                "description_pl": desc["description_pl"]
+            }
+        )
+        count += 1
+
+    print(f"Seeded {count} variant descriptions")
 
 
 def run_migrations_offline() -> None:
@@ -87,6 +177,12 @@ def run_migrations_online() -> None:
 
         with connection.begin():
             seed_data(connection)
+
+        with connection.begin():
+            seed_breed_descriptions(connection)
+
+        with connection.begin():
+            seed_variant_descriptions(connection)
 
 
 if context.is_offline_mode():
