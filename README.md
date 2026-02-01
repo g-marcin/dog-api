@@ -18,10 +18,13 @@ dog-api/
 │   ├── routes/                  # API routes
 │   │   ├── __init__.py
 │   │   ├── breeds.py            # Breed endpoints
+│   │   ├── descriptions.py      # Description endpoints
+│   │   ├── health.py            # Health check endpoints
 │   │   └── images.py            # Image endpoints
 │   └── services/                # Business logic
 │       ├── __init__.py
-│       └── breed_service.py     # Breed/image operations
+│       ├── breed_service.py     # Breed/image operations
+│       └── description_service.py # Description operations
 ├── config.py                    # Environment configuration
 ├── main.py                      # Entry point (runs uvicorn)
 ├── server.py                    # Legacy file (deprecated)
