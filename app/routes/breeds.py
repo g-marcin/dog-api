@@ -22,7 +22,7 @@ async def list_all_breeds():
     response_model=APIResponse,
     tags=["Breeds"],
     summary="Get breed sub-breeds",
-    description="Returns a list of sub-breeds for a specific breed"
+    description="Returns a list of sub-breeds for a specific breed -"
 )
 async def breed_subbreeds(breed: str):
     breeds = get_breeds()
