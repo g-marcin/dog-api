@@ -7,6 +7,10 @@
     "openapi.json"
   ],
   "types": "src/api.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/g-marcin/dog-api"
+  },
   "publishConfig": {
     "access": "public"
   }
