@@ -1,7 +1,11 @@
 venv/
 __pycache__/
 .env
+.npmrc
 old/
+openapi.json
+packages/api-types/openapi.json
+packages/api-types/src/api.ts
 
 .env.local
 .env.development.local

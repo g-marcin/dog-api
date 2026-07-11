@@ -1,4 +1,4 @@
-.PHONY: dev start install test lint format clean pm2-start pm2-stop pm2-restart venv venv-windows venv-linux db-migrate db-migrate-update db-migrate-downgrade db-stamp db-history
+.PHONY: dev start install test lint format clean pm2-start pm2-stop pm2-restart venv venv-windows venv-linux db-migrate db-migrate-update db-migrate-downgrade db-stamp db-history openapi-export
 
 venv-windows:
 	powershell -NoExit -Command ".\.venv\Scripts\Activate.ps1"
@@ -48,3 +48,6 @@ db-stamp:
 db-history:
 	uv run alembic current
 	uv run alembic history
+
+openapi-export:
+	PYTHONPATH=. uv run python scripts/export_openapi.py

@@ -1,0 +1,13 @@
+{
+  "name": "@mgrzmil-org/api-types",
+  "version": "0.0.0",
+  "description": "Generated TypeScript types + OpenAPI spec for dog-api",
+  "files": [
+    "src/api.ts",
+    "openapi.json"
+  ],
+  "types": "src/api.ts",
+  "publishConfig": {
+    "access": "public"
+  }
+}
