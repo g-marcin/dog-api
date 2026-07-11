@@ -1,0 +1,45 @@
+name: Publish API Types
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install Python deps
+        run: uv sync
+
+      - name: Export OpenAPI spec
+        run: PYTHONPATH=. uv run python scripts/export_openapi.py
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Generate TypeScript types
+        run: npx --yes openapi-typescript packages/api-types/openapi.json -o packages/api-types/src/api.ts
+
+      - name: Sync to last published version
+        working-directory: packages/api-types
+        run: |
+          LAST_VERSION=$(npm view @mgrzmil-org/api-types version 2>/dev/null || echo "0.0.0")
+          npm version "$LAST_VERSION" --no-git-tag-version --allow-same-version
+
+      - name: Bump package version
+        working-directory: packages/api-types
+        run: npm version patch --no-git-tag-version
+
+      - name: Publish to npm
+        working-directory: packages/api-types
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
