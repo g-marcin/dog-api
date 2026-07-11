@@ -4,7 +4,8 @@ __pycache__/
 .npmrc
 old/
 openapi.json
-packages/
+packages/api-types/openapi.json
+packages/api-types/src/api.ts
 
 .env.local
 .env.development.local
