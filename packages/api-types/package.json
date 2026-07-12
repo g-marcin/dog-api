@@ -7,6 +7,10 @@
     "openapi.json"
   ],
   "types": "src/api.ts",
+  "scripts": {
+    "generate": "npx --yes openapi-typescript openapi.json -o src/api.ts",
+    "yalc:push": "npm run generate && npx --yes yalc push"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/g-marcin/dog-api"
