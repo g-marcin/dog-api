@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.model.models import APIResponse, success_response
+from app.model.responses import DescriptionMessage
 from app.services.description_service import get_breed_description, get_variant_description
 
 router = APIRouter()
@@ -7,7 +8,7 @@ router = APIRouter()
 
 @router.get(
     "/breed/{breed}/description",
-    response_model=APIResponse,
+    response_model=APIResponse[DescriptionMessage],
     tags=["Descriptions"],
     summary="Get breed description",
     description="Returns the description for a specific breed in multiple languages",
@@ -23,7 +24,7 @@ async def breed_description(breed: str):
 
 @router.get(
     "/breed/{breed}/{variant}/description",
-    response_model=APIResponse,
+    response_model=APIResponse[DescriptionMessage],
     tags=["Descriptions"],
     summary="Get variant description",
     description="Returns the description for a specific breed variant in multiple languages",

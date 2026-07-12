@@ -1,15 +1,19 @@
-from typing import Union, Dict, List
+from typing import Generic, List, TypeVar
 from enum import Enum
 from pydantic import BaseModel
+
+T = TypeVar("T")
+
 
 class Status(str, Enum):
     SUCCESS = "success"
     ERROR = "error"
 
-class APIResponse(BaseModel):
+
+class APIResponse(BaseModel, Generic[T]):
     status: Status
-    message: Union[Dict, List[str], str]
+    message: T
 
-def success_response(message: Union[Dict, List[str], str]) -> APIResponse:
+
+def success_response(message: T) -> APIResponse[T]:
     return APIResponse(status=Status.SUCCESS, message=message)
-

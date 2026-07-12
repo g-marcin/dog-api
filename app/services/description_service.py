@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional
 from app.model.database import (
     SessionLocal,
     Breed,
@@ -6,9 +6,10 @@ from app.model.database import (
     BreedDescription,
     VariantDescription,
 )
+from app.model.responses import DescriptionMessage
 
 
-def get_breed_description(breed_name: str) -> Optional[Dict]:
+def get_breed_description(breed_name: str) -> Optional[DescriptionMessage]:
     """Get description for a breed by name."""
     db = SessionLocal()
     try:
@@ -24,16 +25,16 @@ def get_breed_description(breed_name: str) -> Optional[Dict]:
         if not description:
             return None
 
-        return {
-            "breed": breed_name,
-            "description_en": description.description_en,
-            "description_pl": description.description_pl,
-        }
+        return DescriptionMessage(
+            breed=breed_name,
+            description_en=description.description_en,
+            description_pl=description.description_pl,
+        )
     finally:
         db.close()
 
 
-def get_variant_description(breed_name: str, variant_name: str) -> Optional[Dict]:
+def get_variant_description(breed_name: str, variant_name: str) -> Optional[DescriptionMessage]:
     """Get description for a variant by breed and variant name."""
     db = SessionLocal()
     try:
@@ -57,11 +58,11 @@ def get_variant_description(breed_name: str, variant_name: str) -> Optional[Dict
         if not description:
             return None
 
-        return {
-            "breed": breed_name,
-            "variant": variant_name,
-            "description_en": description.description_en,
-            "description_pl": description.description_pl,
-        }
+        return DescriptionMessage(
+            breed=breed_name,
+            variant=variant_name,
+            description_en=description.description_en,
+            description_pl=description.description_pl,
+        )
     finally:
         db.close()

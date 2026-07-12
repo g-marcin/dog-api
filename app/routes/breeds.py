@@ -1,3 +1,4 @@
+from typing import Dict, List
 from fastapi import APIRouter, HTTPException
 from app.model.models import APIResponse, success_response
 from app.services.breed_service import get_breeds
@@ -7,7 +8,7 @@ router = APIRouter()
 
 @router.get(
     "/breeds/list/all",
-    response_model=APIResponse,
+    response_model=APIResponse[Dict[str, List[str]]],
     tags=["Breeds"],
     summary="List all breeds",
     description="Returns a list of all available dog breeds and their sub-breeds"
@@ -19,7 +20,7 @@ async def list_all_breeds():
 
 @router.get(
     "/breed/{breed}/list",
-    response_model=APIResponse,
+    response_model=APIResponse[List[str]],
     tags=["Breeds"],
     summary="Get breed sub-breeds",
     description="Returns a list of sub-breeds for a specific breed -"
