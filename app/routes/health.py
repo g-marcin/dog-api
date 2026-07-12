@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.model.models import APIResponse, success_response
+from app.model.responses import PerformanceMessage
 from app.services.health_service import check_system_performance, check_health
 
 import os
@@ -8,7 +9,7 @@ router = APIRouter()
 
 @router.get(
     "/performance",
-    response_model=APIResponse,
+    response_model=APIResponse[PerformanceMessage],
     tags=["health"],
     summary="check api os performance",
     description="check api os performance cpu, memory, disk"
@@ -19,7 +20,7 @@ def system_performance():
 
 @router.get(
     "/healthcheck",
-    response_model=APIResponse,
+    response_model=APIResponse[str],
     tags=["health"],
     summary="check api health",
     description="check api health, returns ok 200 if healthy"

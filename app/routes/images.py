@@ -1,4 +1,5 @@
 import random
+from typing import List
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from app.model.models import APIResponse, success_response
@@ -9,7 +10,7 @@ router = APIRouter()
 
 @router.get(
     "/breeds/image/random",
-    response_model=APIResponse,
+    response_model=APIResponse[str],
     tags=["Images"],
     summary="Get random image",
     description="Returns a random dog image URL from all available breeds"
@@ -25,7 +26,7 @@ async def random_image():
 
 @router.get(
     "/breed/{breed}/images",
-    response_model=APIResponse,
+    response_model=APIResponse[List[str]],
     tags=["Images"],
     summary="Get breed images",
     description="Returns all image URLs for a specific breed"
@@ -41,7 +42,7 @@ async def breed_images(breed: str):
 
 @router.get(
     "/breed/{breed}/images/random",
-    response_model=APIResponse,
+    response_model=APIResponse[str],
     tags=["Images"],
     summary="Get random breed image",
     description="Returns a random image URL for a specific breed"
@@ -57,7 +58,7 @@ async def random_breed_image(breed: str):
 
 @router.get(
     "/breed/{breed}/{subbreed}/images",
-    response_model=APIResponse,
+    response_model=APIResponse[List[str]],
     tags=["Images"],
     summary="Get sub-breed images",
     description="Returns all image URLs for a specific sub-breed"
@@ -73,7 +74,7 @@ async def subbreed_images(breed: str, subbreed: str):
 
 @router.get(
     "/breed/{breed}/{subbreed}/images/random",
-    response_model=APIResponse,
+    response_model=APIResponse[str],
     tags=["Images"],
     summary="Get random sub-breed image",
     description="Returns a random image URL for a specific sub-breed"
