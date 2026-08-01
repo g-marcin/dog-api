@@ -7,6 +7,10 @@ import os
 
 router = APIRouter()
 
+# @deprecated @redundant: OS-level cpu/memory/disk stats duplicate what
+# node_exporter already exposes for this machine (node_cpu_seconds_total,
+# node_memory_*, node_filesystem_*) and are scraped into Grafana Cloud already.
+# Kept for now for any existing consumers; do not build new monitoring on this.
 @router.get(
     "/performance",
     response_model=APIResponse[PerformanceMessage],

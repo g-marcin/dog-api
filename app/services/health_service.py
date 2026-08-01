@@ -1,6 +1,8 @@
 import psutil
 import os
 
+# @deprecated @redundant: same machine-level metrics are already collected by
+# node_exporter and shipped via Prometheus remote_write; see /performance route.
 def check_system_performance():
     process = psutil.Process(os.getpid())
     
