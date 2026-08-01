@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 from config import ROOT_PATH
 from app.app_config import get_fastapi_config
 from app.openapi import setup_custom_openapi
@@ -27,6 +28,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+Instrumentator().instrument(app).expose(app)
 
 app.include_router(breeds.router)
 app.include_router(images.router)
