@@ -81,13 +81,13 @@ dog-api/
 ### Using Makefile
 
 ```bash
-make dev          # Run development server
-make start        # Run with auto-reload
-make install      # Install dependencies
-make test         # Run tests
-make lint         # Lint code
-make format       # Format code
-make clean        # Clean cache files
+make              # List all targets
+make install      # Install dependencies (incl. dev tools)
+make start        # Run dev server with auto-reload
+make check        # Lint, format check and tests (same as CI)
+make format       # Format and autofix with ruff
+make db-upgrade   # Apply migrations
+make smoke        # Smoke-test prod (or URL=http://localhost:8000)
 ```
 
 ### Using Python directly

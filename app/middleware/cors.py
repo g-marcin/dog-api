@@ -1,11 +1,13 @@
 import re
 from typing import List, Tuple
+
 import config
+
 
 def parse_cors_origins() -> Tuple[List[str], List[re.Pattern]]:
     plain_origins = []
     regex_patterns = []
-    
+
     for origin in config.CORS_ORIGINS.split(","):
         origin = origin.strip()
         if not origin:
@@ -27,10 +29,12 @@ def parse_cors_origins() -> Tuple[List[str], List[re.Pattern]]:
         else:
             plain_origins.append(origin)
             print(f"CORS: Added plain origin: {origin}")
-    
+
     return plain_origins, regex_patterns
 
+
 plain_origins, regex_patterns = parse_cors_origins()
+
 
 def is_origin_allowed(origin: str) -> bool:
     if not origin:

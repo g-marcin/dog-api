@@ -62,7 +62,7 @@ jobs:
             echo "$DOTENV_B64" | base64 -d > .env.new
             mv .env.new .env
             set -a; . ./.env; set +a
-            uv sync
+            uv sync --no-dev
             uv run alembic upgrade head
             pm2 restart dog-api --update-env
 
@@ -89,7 +89,7 @@ jobs:
         uses: astral-sh/setup-uv@v10.2.0
 
       - name: Install Python deps
-        run: uv sync
+        run: uv sync --no-dev
 
       - name: Export OpenAPI spec
         run: PYTHONPATH=. uv run python scripts/export_openapi.py

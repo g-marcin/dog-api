@@ -1,9 +1,10 @@
 from typing import Optional
+
 from app.model.database import (
-    SessionLocal,
     Breed,
-    BreedVariant,
     BreedDescription,
+    BreedVariant,
+    SessionLocal,
     VariantDescription,
 )
 from app.model.responses import DescriptionMessage
@@ -18,9 +19,7 @@ def get_breed_description(breed_name: str) -> Optional[DescriptionMessage]:
             return None
 
         description = (
-            db.query(BreedDescription)
-            .filter(BreedDescription.breed_id == breed.id)
-            .first()
+            db.query(BreedDescription).filter(BreedDescription.breed_id == breed.id).first()
         )
         if not description:
             return None
@@ -51,9 +50,7 @@ def get_variant_description(breed_name: str, variant_name: str) -> Optional[Desc
             return None
 
         description = (
-            db.query(VariantDescription)
-            .filter(VariantDescription.variant_id == variant.id)
-            .first()
+            db.query(VariantDescription).filter(VariantDescription.variant_id == variant.id).first()
         )
         if not description:
             return None
