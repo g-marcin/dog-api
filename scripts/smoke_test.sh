@@ -9,8 +9,13 @@
 #   CORS_ORIGIN          origin that must be allowed by CORS (default https://mgrzmil.dev)
 #   APP_SMOKE_TEST_LIB   path to a local lib.sh (set by the action in CI)
 
+# eval, not source <(...): process substitution can't be sourced by macOS bash 3.2.
 if [[ -n "${APP_SMOKE_TEST_LIB:-}" ]]; then source "$APP_SMOKE_TEST_LIB"
-else source <(curl -fsSL https://raw.githubusercontent.com/g-marcin/smoke-test-action/v1/lib.sh); fi
+else
+    lib="$(curl -fsSL --max-time 10 https://raw.githubusercontent.com/g-marcin/smoke-test-action/v1/lib.sh)" \
+        || { echo "Failed to fetch smoke-test lib" >&2; exit 1; }
+    eval "$lib"
+fi
 
 smoke_init "${1:-https://api.mgrzmil.dev}"
 
