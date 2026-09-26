@@ -53,7 +53,13 @@ def setup_custom_openapi(app: FastAPI):
             openapi_schema["servers"] = custom_spec["servers"]
         if "info" in custom_spec:
             openapi_schema["info"].update(custom_spec["info"])
-        
+        # TODO: remove -- dummy schema to verify api-types publishing from deploy.yml (npm OIDC)
+        openapi_schema.setdefault("components", {}).setdefault("schemas", {})["PublishCheck"] = {
+            "type": "object",
+            "properties": {"ok": {"type": "boolean"}},
+            "required": ["ok"],
+        }
+
         app.openapi_schema = openapi_schema
         return app.openapi_schema
     
