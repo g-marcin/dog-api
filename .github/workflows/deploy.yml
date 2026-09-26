@@ -25,11 +25,12 @@ jobs:
           DB_MAX_OVERFLOW: ${{ vars.DB_MAX_OVERFLOW }}
           DB_POOL_RECYCLE: ${{ vars.DB_POOL_RECYCLE }}
           DB_POOL_PRE_PING: ${{ vars.DB_POOL_PRE_PING }}
+          API_GIT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           : "${DB_POSTGRES_URL:?DB_POSTGRES_URL secret is missing in the production environment}"
           for key in API_ROOT_PATH API_BASE_URL API_IMG_BASE_URL API_PORT API_CORS_ORIGINS \
-                     DB_POSTGRES_URL DB_PGBOUNCER_MODE DB_POOL_SIZE DB_MAX_OVERFLOW DB_POOL_RECYCLE DB_POOL_PRE_PING; do
+                     DB_POSTGRES_URL DB_PGBOUNCER_MODE DB_POOL_SIZE DB_MAX_OVERFLOW DB_POOL_RECYCLE DB_POOL_PRE_PING API_GIT_SHA; do
             value="${!key:-}"
             if [ -n "$value" ]; then
               printf '%s="%s"\n' "$key" "$value"
@@ -64,3 +65,31 @@ jobs:
             uv sync
             uv run alembic upgrade head
             pm2 restart dog-api --update-env
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    env:
+      API_URL: https://api.mgrzmil.dev
+    steps:
+      - uses: actions/checkout@v4
+
+      # pm2 restarts cold; wait until the new process (matching this commit) answers.
+      - name: Wait for new version
+        run: |
+          for i in $(seq 1 12); do
+            sha="$(curl -s --max-time 5 -o /dev/null -D - "$API_URL/healthcheck" | tr -d '\r' | awk -F': ' 'tolower($1)=="x-git-sha"{print $2}')"
+            if [ "$sha" = "$GITHUB_SHA" ]; then
+              echo "Live on $sha"
+              exit 0
+            fi
+            echo "Attempt $i: X-Git-Sha='${sha:-none}', waiting..."
+            sleep 5
+          done
+          echo "::error::$API_URL did not report $GITHUB_SHA within 60s"
+          exit 1
+
+      - name: Smoke test
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: scripts/smoke_test.sh "$API_URL"

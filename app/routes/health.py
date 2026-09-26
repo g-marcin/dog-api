@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from app.model.models import APIResponse, success_response
 from app.model.responses import PerformanceMessage
 from app.services.health_service import check_system_performance, check_health
 
 import os
+import config
 
 router = APIRouter()
 
@@ -27,8 +28,9 @@ def system_performance():
     response_model=APIResponse[str],
     tags=["health"],
     summary="check api health",
-    description="check api health, returns ok 200 if healthy"
+    description="check api health, returns ok 200 if healthy; X-Git-Sha header carries the deployed commit"
 )
-def system_health():
+def system_health(response: Response):
+    response.headers["X-Git-Sha"] = config.GIT_SHA
     is_healthy = check_health()
     return success_response(is_healthy)
