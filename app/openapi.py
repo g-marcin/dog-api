@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from fastapi import FastAPI
+import config
 
 def get_openapi_schema() -> Dict[str, Any]:
     return {
@@ -35,9 +36,8 @@ def setup_custom_openapi(app: FastAPI):
         if app.openapi_schema:
             return app.openapi_schema
         from fastapi.openapi.utils import get_openapi
-        import os
         custom_spec = get_openapi_schema()
-        root_path = os.getenv("ROOT_PATH", "")
+        root_path = config.ROOT_PATH
         
         openapi_schema = get_openapi(
             title=app.title,

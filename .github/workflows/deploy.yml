@@ -7,20 +7,60 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     steps:
+      # Render .env from the GitHub "production" environment; unset/empty values are skipped.
+      # Shipped base64-encoded so special chars ([, ], *) survive the SSH hop untouched.
+      - name: Render .env
+        id: dotenv
+        env:
+          API_ROOT_PATH: ${{ vars.API_ROOT_PATH }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          API_IMG_BASE_URL: ${{ vars.API_IMG_BASE_URL }}
+          API_PORT: ${{ vars.API_PORT }}
+          API_CORS_ORIGINS: ${{ vars.API_CORS_ORIGINS }}
+          DB_POSTGRES_URL: ${{ secrets.DB_POSTGRES_URL }}
+          DB_PGBOUNCER_MODE: ${{ vars.DB_PGBOUNCER_MODE }}
+          DB_POOL_SIZE: ${{ vars.DB_POOL_SIZE }}
+          DB_MAX_OVERFLOW: ${{ vars.DB_MAX_OVERFLOW }}
+          DB_POOL_RECYCLE: ${{ vars.DB_POOL_RECYCLE }}
+          DB_POOL_PRE_PING: ${{ vars.DB_POOL_PRE_PING }}
+        run: |
+          set -euo pipefail
+          : "${DB_POSTGRES_URL:?DB_POSTGRES_URL secret is missing in the production environment}"
+          for key in API_ROOT_PATH API_BASE_URL API_IMG_BASE_URL API_PORT API_CORS_ORIGINS \
+                     DB_POSTGRES_URL DB_PGBOUNCER_MODE DB_POOL_SIZE DB_MAX_OVERFLOW DB_POOL_RECYCLE DB_POOL_PRE_PING; do
+            value="${!key:-}"
+            if [ -n "$value" ]; then
+              printf '%s="%s"\n' "$key" "$value"
+            fi
+          done > .env.rendered
+          b64="$(base64 -w0 .env.rendered)"
+          echo "::add-mask::$b64"
+          echo "b64=$b64" >> "$GITHUB_OUTPUT"
+          rm .env.rendered
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
+        env:
+          DOTENV_B64: ${{ steps.dotenv.outputs.b64 }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          envs: DOTENV_B64
           script: |
             set -e
+            : "${DOTENV_B64:?rendered .env not passed to VPS, aborting before touching anything}"
             export PATH="$HOME/.local/bin:$PATH"
             cd ${{ vars.VPS_DEPLOY_PATH }}
             git fetch origin main
             git reset --hard origin/main
+            umask 077
+            echo "$DOTENV_B64" | base64 -d > .env.new
+            mv .env.new .env
+            set -a; . ./.env; set +a
             uv sync
             uv run alembic upgrade head
-            pm2 restart dog-api
+            pm2 restart dog-api --update-env
