@@ -69,27 +69,8 @@ jobs:
   smoke-test:
     needs: deploy
     runs-on: ubuntu-latest
-    env:
-      API_URL: https://api.mgrzmil.dev
     steps:
       - uses: actions/checkout@v4
-
-      # pm2 restarts cold; wait until the new process (matching this commit) answers.
-      - name: Wait for new version
-        run: |
-          for i in $(seq 1 12); do
-            sha="$(curl -s --max-time 5 -o /dev/null -D - "$API_URL/healthcheck" | tr -d '\r' | awk -F': ' 'tolower($1)=="x-git-sha"{print $2}')"
-            if [ "$sha" = "$GITHUB_SHA" ]; then
-              echo "Live on $sha"
-              exit 0
-            fi
-            echo "Attempt $i: X-Git-Sha='${sha:-none}', waiting..."
-            sleep 5
-          done
-          echo "::error::$API_URL did not report $GITHUB_SHA within 60s"
-          exit 1
-
-      - name: Smoke test
-        env:
-          EXPECTED_SHA: ${{ github.sha }}
-        run: scripts/smoke_test.sh "$API_URL"
+      - uses: g-marcin/smoke-test-action@v1
+        with:
+          url: https://api.mgrzmil.dev
