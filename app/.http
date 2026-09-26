@@ -1,0 +1,55 @@
+@baseUrl = http://localhost:8000
+@breed = hound
+@subbreed = basset
+
+### System performance
+GET {{baseUrl}}/performance
+
+### System health
+GET {{baseUrl}}/healthcheck
+
+###
+### Breeds
+###
+
+### List all breeds
+GET {{baseUrl}}/breeds/list/all
+
+### Get breed sub-breeds
+GET {{baseUrl}}/breed/{{breed}}/list
+
+###
+### Images
+###
+
+### Random image from all breeds
+GET {{baseUrl}}/breeds/image/random
+
+### All images for a breed
+GET {{baseUrl}}/breed/{{breed}}/images
+
+### Random image for a breed
+GET {{baseUrl}}/breed/{{breed}}/images/random
+
+### All images for a sub-breed
+GET {{baseUrl}}/breed/{{breed}}/{{subbreed}}/images
+
+### Random image for a sub-breed
+GET {{baseUrl}}/breed/{{breed}}/{{subbreed}}/images/random
+
+###
+### Descriptions
+###
+
+### Get breed description
+GET {{baseUrl}}/breed/{{breed}}/description
+
+### Get variant/sub-breed description
+GET {{baseUrl}}/breed/{{breed}}/{{subbreed}}/description
+
+###
+### Documentation
+###
+
+### Redirect to API docs
+GET {{baseUrl}}/
