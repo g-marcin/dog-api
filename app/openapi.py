@@ -1,6 +1,9 @@
-from typing import Dict, Any
+from typing import Any, Dict
+
 from fastapi import FastAPI
+
 import config
+
 
 def get_openapi_schema() -> Dict[str, Any]:
     return {
@@ -9,36 +12,25 @@ def get_openapi_schema() -> Dict[str, Any]:
             "title": "dog-api",
             "description": "API for accessing dog breed images and information",
             "version": "1.0.0",
-            "contact": {
-                "name": "API Support"
-            }
+            "contact": {"name": "API Support"},
         },
         "tags": [
-            {
-                "name": "Breeds",
-                "description": "Operations related to dog breeds and sub-breeds"
-            },
-            {
-                "name": "Images",
-                "description": "Operations related to dog images"
-            }
+            {"name": "Breeds", "description": "Operations related to dog breeds and sub-breeds"},
+            {"name": "Images", "description": "Operations related to dog images"},
         ],
-        "servers": [
-            {
-                "url": "http://localhost:8000",
-                "description": "Local development server"
-            }
-        ]
+        "servers": [{"url": "http://localhost:8000", "description": "Local development server"}],
     }
+
 
 def setup_custom_openapi(app: FastAPI):
     def custom_openapi():
         if app.openapi_schema:
             return app.openapi_schema
         from fastapi.openapi.utils import get_openapi
+
         custom_spec = get_openapi_schema()
         root_path = config.ROOT_PATH
-        
+
         openapi_schema = get_openapi(
             title=app.title,
             version=app.version,
@@ -62,5 +54,5 @@ def setup_custom_openapi(app: FastAPI):
 
         app.openapi_schema = openapi_schema
         return app.openapi_schema
-    
+
     app.openapi = custom_openapi

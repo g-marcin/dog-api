@@ -1,15 +1,16 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.responses import RedirectResponse
 from prometheus_fastapi_instrumentator import Instrumentator
-from config import ROOT_PATH
+from starlette.middleware.base import BaseHTTPMiddleware
+
 from app.app_config import get_fastapi_config
-from app.openapi import setup_custom_openapi
-from app.middleware.cors import plain_origins, is_origin_allowed
+from app.middleware.cors import plain_origins
 from app.model.database import engine
-from app.routes import breeds, images, health, descriptions, telemetry
+from app.openapi import setup_custom_openapi
+from app.routes import breeds, descriptions, health, images, telemetry
 from app.telemetry import setup_telemetry
+from config import ROOT_PATH
 
 
 class RootPathFixMiddleware(BaseHTTPMiddleware):
@@ -46,4 +47,3 @@ app.include_router(images.router)
 app.include_router(health.router)
 app.include_router(descriptions.router)
 app.include_router(telemetry.router)
-

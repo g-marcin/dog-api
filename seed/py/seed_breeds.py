@@ -7,6 +7,7 @@ Usage:
 
 Requires DB_POSTGRES_URL environment variable or .env file.
 """
+
 import json
 import os
 import sys
@@ -15,8 +16,8 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
 
 load_dotenv()
 
@@ -61,10 +62,7 @@ def seed_breeds(dry_run: bool = False):
 
         # Insert breeds
         inserts = [{"breed": name} for name in breed_names]
-        conn.execute(
-            text("INSERT INTO breeds (breed) VALUES (:breed)"),
-            inserts
-        )
+        conn.execute(text("INSERT INTO breeds (breed) VALUES (:breed)"), inserts)
         conn.commit()
         print(f"Successfully inserted {len(breed_names)} breeds")
 

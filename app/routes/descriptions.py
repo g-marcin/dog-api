@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from opentelemetry import trace
+
 from app.model.models import APIResponse, success_response
 from app.model.responses import DescriptionMessage
 from app.services.description_service import get_breed_description, get_variant_description
@@ -20,7 +21,9 @@ async def breed_description(breed: str, request: Request):
     # auto-instrumentation deliberately excludes bodies (size/PII risk).
     span = trace.get_current_span()
     span.set_attribute("http.request.full_url", str(request.url))
-    span.set_attribute("http.request.body", (await request.body()).decode("utf-8", errors="replace"))
+    span.set_attribute(
+        "http.request.body", (await request.body()).decode("utf-8", errors="replace")
+    )
 
     description = get_breed_description(breed)
 

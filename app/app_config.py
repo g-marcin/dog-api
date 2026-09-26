@@ -1,4 +1,5 @@
-from typing import Dict, Any
+from typing import Any, Dict
+
 
 def get_fastapi_config(root_path: str = "") -> Dict[str, Any]:
     config = {
@@ -7,8 +8,7 @@ def get_fastapi_config(root_path: str = "") -> Dict[str, Any]:
         "version": "1.0.0",
         "docs_url": "/docs",
         "redoc_url": "/redoc",
-        "openapi_url": "/openapi.json"
+        "openapi_url": "/openapi.json",
     }
     config["root_path"] = root_path or ""
     return config
-
