@@ -1,4 +1,4 @@
-.PHONY: dev start install test lint format clean pm2-start pm2-stop pm2-restart venv venv-windows venv-linux db-migrate db-migrate-update db-migrate-downgrade db-stamp db-history openapi-export
+.PHONY: dev start install test lint format clean pm2-start pm2-stop pm2-restart venv venv-windows venv-linux venv-macos db-migrate db-migrate-update db-migrate-downgrade db-stamp db-history
 
 venv-windows:
 	powershell -NoExit -Command ".\.venv\Scripts\Activate.ps1"
@@ -6,10 +6,17 @@ venv-windows:
 venv-linux:
 	bash -c "source ./.venv/bin/activate && exec bash"
 
+venv-macos:
+	zsh -c "source ./.venv/bin/activate && exec zsh"
+
 ifeq ($(OS),Windows_NT)
 venv: venv-windows
 else
+ifeq ($(shell uname -s),Darwin)
+venv: venv-macos
+else
 venv: venv-linux
+endif
 endif
 
 dev:

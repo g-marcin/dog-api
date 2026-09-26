@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -33,6 +34,12 @@ app.add_middleware(
 
 Instrumentator().instrument(app).expose(app)
 setup_telemetry(app, engine)
+
+
+@app.get("/", include_in_schema=False)
+async def root(request: Request):
+    return RedirectResponse(url=f"{request.scope.get('root_path', '').rstrip('/')}/docs")
+
 
 app.include_router(breeds.router)
 app.include_router(images.router)
