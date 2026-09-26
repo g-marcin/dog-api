@@ -12,6 +12,7 @@ BASE_URL_API = os.getenv("API_BASE_URL", "http://localhost:8000")
 BASE_URL_IMG = os.getenv("API_IMG_BASE_URL", "https://mgrzmil.dev")
 PORT = int(os.getenv("API_PORT", 8000))
 CORS_ORIGINS = os.getenv("API_CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,http://localhost:5174,https://mgrzmil.dev,https://woof-app-ff670*.web.app")
+GIT_SHA = os.getenv("API_GIT_SHA", "unknown")
 
 if ROOT_PATH:
     BASE_URL_API = BASE_URL_API.rstrip("/") + ROOT_PATH
