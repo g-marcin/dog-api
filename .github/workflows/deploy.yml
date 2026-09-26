@@ -74,3 +74,69 @@ jobs:
       - uses: g-marcin/smoke-test-action@v1
         with:
           url: https://api.mgrzmil.dev
+
+  # Publish only after prod is live and verified, so types never describe an API that failed to deploy.
+  publish-api-types:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # npm trusted publishing (OIDC); npm's trusted publisher must point at deploy.yml
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install Python deps
+        run: uv sync
+
+      - name: Export OpenAPI spec
+        run: PYTHONPATH=. uv run python scripts/export_openapi.py
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm CLI (OIDC trusted publishing requires >=11.5.1)
+        run: npm install -g npm@11
+
+      - name: Generate TypeScript types
+        run: npx --yes openapi-typescript packages/api-types/openapi.json -o packages/api-types/src/api.ts
+
+      # Skip the release when the generated spec and types match the latest published package.
+      # If the package can't be fetched (first publish, registry hiccup) treat it as changed.
+      - name: Compare with published package
+        id: diff
+        working-directory: packages/api-types
+        run: |
+          published="$RUNNER_TEMP/published"
+          mkdir -p "$published"
+          if npm pack @mgrzmil-org/api-types@latest --pack-destination "$published" --silent >/dev/null 2>&1; then
+            tar xzf "$published"/*.tgz -C "$published"
+            if diff -q openapi.json "$published/package/openapi.json" && diff -q src/api.ts "$published/package/src/api.ts"; then
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "::notice::API types unchanged since last published version, skipping publish"
+              exit 0
+            fi
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Sync to last published version
+        if: steps.diff.outputs.changed == 'true'
+        working-directory: packages/api-types
+        run: |
+          LAST_VERSION=$(npm view @mgrzmil-org/api-types version 2>/dev/null || echo "0.0.0")
+          npm version "$LAST_VERSION" --no-git-tag-version --allow-same-version
+
+      - name: Bump package version
+        if: steps.diff.outputs.changed == 'true'
+        working-directory: packages/api-types
+        run: npm version patch --no-git-tag-version
+
+      - name: Publish to npm
+        if: steps.diff.outputs.changed == 'true'
+        working-directory: packages/api-types
+        run: npm publish
