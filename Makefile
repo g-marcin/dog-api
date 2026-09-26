@@ -1,60 +1,53 @@
-.PHONY: dev start install test lint format clean pm2-start pm2-stop pm2-restart venv venv-windows venv-linux venv-macos db-migrate db-migrate-update db-migrate-downgrade db-stamp db-history
+.DEFAULT_GOAL := help
+.PHONY: help install start test lint format format-check check clean smoke openapi-export \
+	db-generate db-upgrade db-downgrade db-stamp db-history
 
-venv-windows:
-	powershell -NoExit -Command ".\.venv\Scripts\Activate.ps1"
+help: ## Show available targets
+	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
-venv-linux:
-	bash -c "source ./.venv/bin/activate && exec bash"
-
-venv-macos:
-	zsh -c "source ./.venv/bin/activate && exec zsh"
-
-ifeq ($(OS),Windows_NT)
-venv: venv-windows
-else
-ifeq ($(shell uname -s),Darwin)
-venv: venv-macos
-else
-venv: venv-linux
-endif
-endif
-
-dev:
-	nodemon --exec "uv run python main.py" --ext ".py"
-
-start:
-	uv run uvicorn app.main:app --host localhost --port 8000 --reload
-
-install:
+install: ## Install dependencies (incl. dev tools)
 	uv sync
 
-test:
-	uv run python -m pytest
+start: ## Run dev server with auto-reload
+	uv run uvicorn app.main:app --host localhost --port 8000 --reload
 
-lint:
-	uv run flake8 app/
+test: ## Run tests (needs DB_POSTGRES_URL with migrated schema)
+	uv run pytest
 
-format:
-	uv run black app/
+lint: ## Lint with ruff
+	uv run ruff check .
 
-clean:
-	uv run python -c "import shutil, pathlib; [shutil.rmtree(p) for p in pathlib.Path('.').rglob('__pycache__')]; [p.unlink() for p in pathlib.Path('.').rglob('*.pyc')]"
+format: ## Format and autofix with ruff
+	uv run ruff format .
+	uv run ruff check --fix .
 
-db-migrate:
+format-check: ## Fail if files are not formatted
+	uv run ruff format --check .
+
+check: lint format-check test ## Run everything CI runs
+
+clean: ## Remove Python caches
+	find . -type d -name __pycache__ -not -path './.venv/*' -exec rm -rf {} +
+	rm -rf .pytest_cache .ruff_cache
+
+smoke: ## Smoke-test a running instance (URL=https://api.mgrzmil.dev by default)
+	scripts/smoke_test.sh $(URL)
+
+openapi-export: ## Export OpenAPI spec for api-types
+	PYTHONPATH=. uv run python scripts/export_openapi.py
+
+db-generate: ## Autogenerate a migration (MSG="description")
 	uv run alembic revision --autogenerate -m "$(MSG)"
 
-db-migrate-update:
+db-upgrade: ## Apply all migrations
 	uv run alembic upgrade head
 
-db-migrate-downgrade:
+db-downgrade: ## Roll back one migration
 	uv run alembic downgrade -1
 
-db-stamp:
+db-stamp: ## Stamp DB at a revision without running it (REV=...)
 	uv run alembic stamp $(REV)
 
-db-history:
+db-history: ## Show current revision and history
 	uv run alembic current
 	uv run alembic history
-
-openapi-export:
-	PYTHONPATH=. uv run python scripts/export_openapi.py
