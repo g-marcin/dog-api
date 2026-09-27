@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 try:
@@ -7,6 +8,17 @@ try:
     load_dotenv()
 except ImportError:
     pass
+
+# Keys that must be set in production. Locally they fall back to the defaults below;
+# in production a missing key would silently point the app at localhost, so fail fast.
+# deploy.yml imports this module against the rendered .env before touching the VPS.
+REQUIRED_IN_PROD = ("DB_POSTGRES_URL", "API_IMG_BASE_URL", "API_CORS_ORIGINS")
+
+APP_ENV = os.getenv("API_ENV", "development")
+if APP_ENV == "production":
+    missing = [key for key in REQUIRED_IN_PROD if not os.getenv(key)]
+    if missing:
+        sys.exit(f"Missing required env vars for API_ENV=production: {', '.join(missing)}")
 
 ROOT_PATH = os.getenv("API_ROOT_PATH", "")
 BASE_URL_API = os.getenv("API_BASE_URL", "http://localhost:8000")

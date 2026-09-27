@@ -9,11 +9,17 @@ jobs:
     runs-on: ubuntu-24.04
     environment: production
     steps:
+      - uses: actions/checkout@v7
+
       # Render .env from the GitHub "production" environment; unset/empty values are skipped.
+      # Before rendering, import config.py with the same values: it exits if any key in
+      # REQUIRED_IN_PROD is missing or a numeric value doesn't parse, so a bad environment
+      # fails here instead of taking prod down. config.py needs only the stdlib, no uv sync.
       # Shipped base64-encoded so special chars ([, ], *) survive the SSH hop untouched.
-      - name: Render .env
+      - name: Validate and render .env
         id: dotenv
         env:
+          API_ENV: production
           API_ROOT_PATH: ${{ vars.API_ROOT_PATH }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
           API_IMG_BASE_URL: ${{ vars.API_IMG_BASE_URL }}
@@ -28,12 +34,16 @@ jobs:
           API_GIT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          : "${DB_POSTGRES_URL:?DB_POSTGRES_URL secret is missing in the production environment}"
-          for key in API_ROOT_PATH API_BASE_URL API_IMG_BASE_URL API_PORT API_CORS_ORIGINS \
-                     DB_POSTGRES_URL DB_PGBOUNCER_MODE DB_POOL_SIZE DB_MAX_OVERFLOW DB_POOL_RECYCLE DB_POOL_PRE_PING API_GIT_SHA; do
-            value="${!key:-}"
-            if [ -n "$value" ]; then
-              printf '%s="%s"\n' "$key" "$value"
+          keys=(API_ENV API_ROOT_PATH API_BASE_URL API_IMG_BASE_URL API_PORT API_CORS_ORIGINS
+                DB_POSTGRES_URL DB_PGBOUNCER_MODE DB_POOL_SIZE DB_MAX_OVERFLOW DB_POOL_RECYCLE DB_POOL_PRE_PING API_GIT_SHA)
+          # Unset vars arrive as empty strings; drop them so the check sees exactly what .env will hold.
+          for key in "${keys[@]}"; do
+            if [ -z "${!key:-}" ]; then unset "$key"; fi
+          done
+          python3 -c "import config"
+          for key in "${keys[@]}"; do
+            if [ -n "${!key:-}" ]; then
+              printf '%s="%s"\n' "$key" "${!key}"
             fi
           done > .env.rendered
           b64="$(base64 -w0 .env.rendered)"
